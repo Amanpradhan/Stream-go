@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package protobuf;
+package stream-go;
 
-option go_package = "./AsyncCommunication";
+option go_package = "github.com/Amanpradhan/Stream-go";
 
 service Agent {
   rpc Communicate (stream Request) returns (stream Response) {}
