@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package protobuf;
+
+option go_package = "./AsyncCommunication";
+
+service Agent {
+  rpc Communicate (stream Request) returns (stream Response) {}
+}
+
+message Request {
+  string message = 1;
+}
+
+message Response {
+  string result = 1;
+}
