@@ -6,5 +6,5 @@
 4. After each time interval, client will send a random string generated from list of random strings (defined in generateString() function)
 5. Upon receiving any request, the server will also take the input, greet the client and based on time_interval, it will also generate random string and send it to client
 6. The client when getting any response, will check for 'hello' substring inside it. If it exists, then it will print that.
-7. Currently I have commented out the part where messages from client and server and logged. You can uncomment them in client.go and server.go - they will be accompanied by a comment asking to uncomment the line below (currently line 73 in client.go and 99 in client.go)
+7. Currently I have commented out the part where messages from client and server and logged. You can uncomment them in client.go and server.go - they will be accompanied by a comment asking to uncomment the line below (currently line 74 in client.go and 98 in server.go)
 
