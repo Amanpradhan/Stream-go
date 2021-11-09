@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	pb "github.com/Amanpradhan/Stream-go"
+	pb "github.com/Amanpradhan/Stream-go/src/proto"
 	"google.golang.org/grpc"
 	"io"
 	"log"
@@ -10,12 +10,35 @@ import (
 	"strings"
 	"time"
 )
+
+const (
+	interval_time = 2 * time.Second
+	num_request   = 100
+)
+
 func generateString() string {
 	var dummy = []string{"hello", "sun", "world", "space", "moon", "crypto", "sky", "ocean", "universe", "human"}
 	rnd1 := int32(rand.Intn(len(dummy)))
 	rnd2 := int32(rand.Intn(len(dummy)))
 	return dummy[rnd1] + " " + dummy[rnd2]
 }
+
+func greet() string {
+	t := time.Now()
+	var st string
+	switch {
+	case t.Hour() < 12:
+		st = "Good morning!"
+	case t.Hour() < 17:
+		st = "Good afternoon!"
+	case t.Hour() < 19:
+		st = "Good evening!"
+	default:
+		st = "Good night!"
+	}
+	return st
+}
+
 func main() {
 	rand.Seed(time.Now().Unix())
 	// start connection by dialing through grpc
@@ -35,15 +58,35 @@ func main() {
 
 	// started a goroutine which will send 100 requests to client
 	go func() {
-		for i := 1; i <= 100; i++ {
+		for i := 1; i <= num_request; i++ { // sending the request for specified times
+			ticker := time.NewTicker(interval_time)
+			quit := make(chan struct{})
+			go func() {
+				for {
+					select {
+					case <-ticker.C:
+						m := greet()
+						req := pb.Request{Message: m}
+						if err := stream.Send(&req); err != nil {
+							log.Fatalf("got error while sending %v", err)
+						}
+						// uncomment below line to see all messages sent by server to client
+						//fmt.Printf("message sent successfully %s to server\n", req.Message)
+
+					case <-quit:
+						ticker.Stop()
+						return
+					}
+				}
+			}()
+			<-time.After(time.Duration(interval_time))
 			m := generateString()
 			req := pb.Request{Message: m}
 			if err := stream.Send(&req); err != nil {
 				log.Fatalf("got error while sending %v", err)
 			}
 			// uncomment line below to check the message that client sent
-			//log.Printf("sent %s", req.Message)
-			time.Sleep(time.Millisecond * 2000)
+			//log.Printf("random message sent to server %s", req.Message)
 		}
 		if err := stream.CloseSend(); err != nil {
 			log.Println(err)
@@ -64,7 +107,7 @@ func main() {
 			}
 			recvMsg := resp.Result
 			if strings.Contains(recvMsg, "hello") {
-				log.Println(recvMsg)
+				log.Println("Message containing string hello: ", recvMsg)
 			}
 		}
 	}()
